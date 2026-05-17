@@ -34,12 +34,18 @@ const PORT = process.env.PORT || 3000;
 try {
   let serviceAccount;
 
-  // Option 1: Parse from a stringified JSON environment variable (Best for Render/Railway)
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+  // Option 1: Parse from a Base64 encoded string (Most robust for Render/Railway)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_BASE64) {
+    const jsonStr = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+    serviceAccount = JSON.parse(jsonStr);
+    console.log('✅ Loaded Firebase credentials from Base64 Environment Variable');
+  }
+  // Option 2: Parse from a stringified JSON environment variable
+  else if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-    console.log('✅ Loaded Firebase credentials from Environment Variable');
+    console.log('✅ Loaded Firebase credentials from JSON Environment Variable');
   } 
-  // Option 2: Fallback to reading from the local file path
+  // Option 3: Fallback to reading from the local file path
   else {
     const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT || './serviceAccountKey.json';
     serviceAccount = require(serviceAccountPath);
